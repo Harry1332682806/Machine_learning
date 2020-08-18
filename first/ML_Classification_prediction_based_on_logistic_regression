@@ -542,6 +542,23 @@ print('The test predict Probability of each class:\n',test_predict_proba)
 print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_train,train_predict))
 print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_test,test_predict))
 
+##查看混淆矩阵
+confusion_matrix_result=metrics.confusion_matrix(test_predict,y_test)
+print('The confusion matrix result:\n',confusion_matrix_result)
+
+##利用热力图对于结果进行可视化
+plt.figure(figsize=(8,6))
+sns.heatmap(confusion_matrix_result,annot=True,cmap='Blues')
+plt.xlabel('Predicted labels')
+plt.ylabel('True labels')
+plt.show()
+
+##The confusion matrix result:
+##[[10  0   0]
+##[0   8   2] 
+##[0   2   8]]
+
+
 ```
 
 
@@ -552,8 +569,13 @@ print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_tes
 
 ![ml11](https://github.com/Harry1332682806/Machine_learning/raw/master/first/img/ml11.png)
 
+你可以这样子推到，首先你要构建这个函数，那么你看到函数的变化是再1或0上的，然后想到exp(-x)的函数，x增大，依旧会保持于0上，所以分母就保证在1，使得整个值为1；而趋近于0，使得能保持在1上，所以整个函数保证在0-1的s变化。
+然而这样子有什么意义吗？
+> 这样子可以将函数两边做分类了，可以修改函数参数，达到在你想要的值之间做分类。
+> 还有一点，那便是标签，标签需要我们来判断，而这个函数刚刚好就能分类标签的作用。
 
-对应的函数图像可以表示如下:
+
+对应的函数图像可以表示程序：其实就是我们高中生物所学的s型曲线。
 
 ``` python
 import numpy as np
@@ -566,6 +588,23 @@ plt.xlabel('z')
 plt.ylabel('y')
 plt.grid()
 plt.show()
+
+#or
+import numpy as np
+import matplotlib.pyplot as plt
+def sigmoid(x):
+    return 1.0/(1+np.exp(-x))
+ 
+sigmoid_inputs = np.arange(-10,10,0.1)
+sigmoid_outputs = sigmoid(sigmoid_inputs)
+print("Sigmoid Function Input :: {}".format(sigmoid_inputs))
+print("Sigmoid Function Output :: {}".format(sigmoid_outputs))
+ 
+plt.plot(sigmoid_inputs,sigmoid_outputs)
+plt.xlabel("Sigmoid Inputs")
+plt.ylabel("Sigmoid Outputs")
+plt.show()
+
 ```
 
 
@@ -576,9 +615,11 @@ plt.show()
 
 将回归方程写入其中为：![ml12](https://github.com/Harry1332682806/Machine_learning/raw/master/first/img/ml12.png)
 
+> 这里的意思是，当使用y=1的标签的时候，判断x于theta的值的边界，由此我们便能带入标签求解问题。
+
 所以![ml13](https://github.com/Harry1332682806/Machine_learning/raw/master/first/img/ml13.png)
 
-逻辑回归从其原理上来说，逻辑回归其实是实现了一个决策边界：对于函数![ml14](https://github.com/Harry1332682806/Machine_learning/raw/master/first/img/ml14.png)
+逻辑回归从其原理上来说，逻辑回归其实是实现了一个决策边界：对于函数![ml11](https://github.com/Harry1332682806/Machine_learning/raw/master/first/img/ml11.png)
 
 当z≥0 时,y≥0.5,分类为1，当 z<0时,y<0.5,分类为0，其对应的y值我们可以视为类别1的概率预测值。
 
@@ -587,48 +628,6 @@ plt.show()
 对于模型的训练而言：实质上来说就是利用数据求解出对应的模型的特定的ω。从而得到一个针对于当前数据的特征逻辑回归模型。
 
 而对于多分类而言，将多个二分类的逻辑回归组合，即可实现多分类。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -749,8 +748,84 @@ y_label_new2_predict_proba=lr_clf.predict_proba(x_fearures_new2)
 print('The New point 1 predict Probability of each class:\n',y_label_new1_predict_proba)
 print('The New point 2 predict Probability of each class:\n',y_label_new2_predict_proba)
 
+```  
 ```
-
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.datasets import load_iris
+data = load_iris()
+iris_target = data.target
+iris_features = pd.DataFrame(data=data.data, columns=data.feature_names)
+print(iris_features.info())
+print(iris_features.head())
+print(iris_features.tail())
+print(iris_target)
+print(pd.Series(iris_target).value_counts())
+print(iris_features.describe())
+iris_all = iris_features.copy()
+iris_all['target'] = iris_target
+sns.pairplot(data=iris_all,diag_kind='hist', hue= 'target')
+plt.show()
+for col in iris_features.columns:
+    sns.boxplot(x='target', y=col, saturation=0.5,
+palette='pastel', data=iris_all)
+    plt.title(col)
+    plt.show()
+from mpl_toolkits.mplot3d import Axes3D
+fig = plt.figure(figsize=(10,8))
+ax = fig.add_subplot(111, projection='3d')
+iris_all_class0 = iris_all[iris_all['target']==0].values
+iris_all_class1 = iris_all[iris_all['target']==1].values
+iris_all_class2 = iris_all[iris_all['target']==2].values
+ax.scatter(iris_all_class0[:,0], iris_all_class0[:,1], iris_all_class0[:,2],label='setosa')
+ax.scatter(iris_all_class1[:,0], iris_all_class1[:,1], iris_all_class1[:,2],label='versicolor')
+ax.scatter(iris_all_class2[:,0], iris_all_class2[:,1], iris_all_class2[:,2],label='virginica')
+plt.legend()
+plt.show()
+from sklearn.model_selection import train_test_split
+print(iris_features,'\n',iris_target)
+iris_features_part=iris_features.iloc[:100]
+iris_target_part=iris_target[:100]
+x_train,x_test,y_train,y_test=train_test_split(iris_features_part,iris_target_part,test_size=0.2,random_state=2020)
+from sklearn.linear_model import LogisticRegression
+clf=LogisticRegression(random_state=0,solver='lbfgs')
+clf.fit(x_train,y_train)
+print('the weight of Logistic Regression:',clf.coef_)
+print('the intercept(w0) of Logistic Regression:',clf.intercept_)
+train_predict=clf.predict(x_train)
+test_predict=clf.predict(x_test)
+from sklearn import metrics
+print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_train,train_predict))
+print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_test,test_predict))
+confusion_matrix_result=metrics.confusion_matrix(test_predict,y_test)
+print('The confusion matrix result:\n',confusion_matrix_result)
+plt.figure(figsize=(8,6))
+sns.heatmap(confusion_matrix_result,annot=True,cmap='Blues')
+plt.xlabel('Predictedlabels')
+plt.ylabel('Truelabels')
+plt.show()
+x_train,x_test,y_train,y_test=train_test_split(iris_features,iris_target,test_size=0.2,random_state=2020)
+clf=LogisticRegression(random_state=0,solver='lbfgs')
+clf.fit(x_train,y_train)
+print('the weight of Logistic Regression:\n',clf.coef_)
+print('the intercept(w0) of Logistic Regression:\n',clf.intercept_)
+train_predict=clf.predict(x_train)
+test_predict=clf.predict(x_test)
+train_predict_proba=clf.predict_proba(x_train)
+test_predict_proba=clf.predict_proba(x_test)
+print('The test predict Probability of each class:\n',test_predict_proba)
+print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_train,train_predict))
+print('The accuracy of the Logistic Regression is:',metrics.accuracy_score(y_test,test_predict))
+confusion_matrix_result=metrics.confusion_matrix(test_predict,y_test)
+print('The confusion matrix result:\n',confusion_matrix_result)
+plt.figure(figsize=(8,6))
+sns.heatmap(confusion_matrix_result,annot=True,cmap='Blues')
+plt.xlabel('Predicted labels')
+plt.ylabel('True labels')
+plt.show()
+```
 
 
 
